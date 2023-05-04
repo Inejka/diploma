@@ -7,3 +7,4 @@ model.bin
 debug.log
 main.py
 gradio_app.py
+model_pretrained.bin
