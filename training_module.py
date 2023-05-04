@@ -131,7 +131,7 @@ def train_from_resnet101_with_dataset():
     return model
 
 
-def train_model_from_ram_with_flagged(model, transforms, num_epochs=5, batch_size=9):
+def train_model_from_ram_with_flagged(model, transforms, num_epochs=5, batch_size=9, lrs=[1e-5, 5e-3, 1e-3]):
     sql_to_csv()
     CSV_FILE_TRAIN = os.path.join("flagged", "data.csv")
     ROOT_DIR_TRAIN = ""
@@ -141,10 +141,10 @@ def train_model_from_ram_with_flagged(model, transforms, num_epochs=5, batch_siz
                                                        shuffle=True)
 
     plist = [
-        {'params': model.layer4.parameters(), 'lr': 1e-6},
-        {'params': model.fc.parameters(), 'lr': 5e-4}
+        {'params': model.layer4.parameters(), 'lr': lrs[0]},
+        {'params': model.fc.parameters(), 'lr': lrs[1]}
     ]
-    optimizer_ft = optim.Adam(plist, lr=0.0001)
+    optimizer_ft = optim.Adam(plist, lr=lrs[2])
     lr_sch = lr_scheduler.StepLR(optimizer_ft, step_size=10, gamma=0.1)
 
     model = train_model(model,
@@ -160,7 +160,7 @@ def train_model_from_ram_with_flagged(model, transforms, num_epochs=5, batch_siz
     return model
 
 
-def train_model_from_my_pretrained(transforms, num_epochs=5, batch_size=9):
+def train_model_from_my_pretrained(transforms, num_epochs=5, batch_size=9, lrs=[1e-5, 5e-3, 1e-3]):
     if not os.path.exists("model_pretrained.bin"):
         logging.info("Missing model, downloading")
         url = 'https://drive.google.com/uc?id=1uyIYjcPRg6TwIrLpa_p9bmCALtAax79F'
@@ -179,10 +179,10 @@ def train_model_from_my_pretrained(transforms, num_epochs=5, batch_size=9):
                                                        shuffle=True)
 
     plist = [
-        {'params': model.layer4.parameters(), 'lr': 1e-6},
-        {'params': model.fc.parameters(), 'lr': 5e-4}
+        {'params': model.layer4.parameters(), 'lr': lrs[0]},
+        {'params': model.fc.parameters(), 'lr': lrs[1]}
     ]
-    optimizer_ft = optim.Adam(plist, lr=0.0001)
+    optimizer_ft = optim.Adam(plist, lr=lrs[2])
     lr_sch = lr_scheduler.StepLR(optimizer_ft, step_size=10, gamma=0.1)
 
     model = train_model(model,
@@ -218,8 +218,3 @@ def sql_to_csv():
                            detect_types=sqlite3.PARSE_COLNAMES)
     db_df = pd.read_sql_query("SELECT * FROM images", conn)
     db_df.to_csv(os.path.join("flagged", "data.csv"), index=False)
-
-
-if __name__ == '__main__':
-    # train_from_resnet101_with_dataset()
-    sql_to_csv()
