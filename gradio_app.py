@@ -3,7 +3,7 @@ import logging
 from collections import UserDict
 from io import BytesIO
 from training_module import *
-
+from gallery_builder import *
 import gradio as gr
 import requests
 
@@ -27,7 +27,7 @@ c = conn.cursor()
 c.execute(''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='images' ''')
 if not c.fetchone()[0] == 1:
     c.execute('''CREATE TABLE images
-             (id SERIAL PRIMARY KEY, image_path TEXT, rating INTEGER)''')
+             (id INTEGER PRIMARY KEY, image_path TEXT, rating INTEGER)''')
     conn.commit()
     conn.close()
 # ----------------------------------------------------------------------------------------------------------------------
@@ -97,16 +97,19 @@ with gr.Blocks() as app:
             logging.info(f"Got image with src {inp} and score {score}")
             conn = sqlite3.connect(os.path.join("flagged", "data.db"))
             c = conn.cursor()
-            c.execute("SELECT COUNT(*) FROM images")
+            c.execute("SELECT MAX(id) FROM images")
+            result = c.fetchone()
 
-            # Fetch the result of the query
-            row_count = c.fetchone()[0]
+            if result[0] is not None:
+                next_id = result[0] + 1
+            else:
+                next_id = 1
 
             req = requests.get(inp, headers=headers)
             img = Image.open(BytesIO(req.content))
-            img.save(os.path.join("flagged", str(row_count) + ".png"))
+            img.save(os.path.join("flagged", str(next_id) + ".png"))
             c.execute("INSERT INTO images (image_path, rating) VALUES (?, ?)",
-                      (os.path.join("flagged", str(row_count) + ".png"), score))
+                      (os.path.join("flagged", str(next_id) + ".png"), score))
             conn.commit()
             conn.close()
             logging.info("Image added")
@@ -231,4 +234,4 @@ with gr.Blocks() as app:
 
 
         button.click(load_standart_pretrained)
-
+    build_gallery("Database tab", NUM_ROWS, NUM_COLUMNS)
