@@ -4,7 +4,7 @@ import sqlite3
 import gradio as gr
 from PIL import Image
 
-NUM_ROWS = 1
+NUM_ROWS = 2
 NUM_COLUMNS = 4
 
 
@@ -65,9 +65,8 @@ def next_page(inp):
     return to_return
 
 
-def build_gallery(name, rows, columns) -> dict:
+def build_gallery(name, rows, columns):
     to_update = []
-    to_return = {}
     del_buttons = []
     images_pos = []
     with gr.Tab(name) as tab:
@@ -82,24 +81,22 @@ def build_gallery(name, rows, columns) -> dict:
                     with gr.Column():
                         image_number = gr.Textbox(i * columns + j, visible=False)
                         delete_button = gr.Button("Delete")
-                        to_return[f"pos_{i * columns + j}"] = gr.Image()
+                        image = gr.Image()
                         buttons = gr.Radio(["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"], label="Rating",
                                            interactive=True)
-                        buttons.associated_image = to_return[f"pos_{i * columns + j}"]
-                        to_return[f"pos_{i * columns + j}"].associated_radio = buttons
+                        buttons.associated_image = image
                         rescore_button = gr.Button("Rescore")
                         rescore_button.click(rescore, inputs=[page_counter, image_number, buttons])
 
                         del_buttons.append(delete_button)
                         images_pos.append(image_number)
                         to_update.append(buttons)
-                        to_update.append(to_return[f"pos_{i * columns + j}"])
+                        to_update.append(image)
 
         tab.select(update_gallery, inputs=page_counter, outputs=to_update)
         temp = [page_counter]
         temp.extend(to_update)
         next.click(next_page, inputs=page_counter, outputs=temp)
         prev.click(prev_page, inputs=page_counter, outputs=temp)
-        for i,j in zip(del_buttons, images_pos):
-            i.click(del_image, inputs=[page_counter, j],outputs=to_update)
-    return to_return
+        for i, j in zip(del_buttons, images_pos):
+            i.click(del_image, inputs=[page_counter, j], outputs=to_update)

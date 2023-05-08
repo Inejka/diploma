@@ -1,11 +1,12 @@
 import base64
-import logging
 from collections import UserDict
-from io import BytesIO
-from training_module import *
-from gallery_builder import *
+
 import gradio as gr
 import requests
+
+from gallery_builder import *
+from image_suggestion_builder import *
+from training_module import *
 
 # ENABLE LOGGING--------------------------------------------------------------------------------------------------------
 logging.basicConfig(
@@ -187,6 +188,7 @@ with gr.Blocks() as app:
             model.eval()
             torch.cuda.empty_cache()
             buffer.clear()
+            set_model(model)
 
 
         def train_with_flagged(lr1, lr2, lr3, batch_size_pm, epochs_pm):
@@ -235,3 +237,6 @@ with gr.Blocks() as app:
 
         button.click(load_standart_pretrained)
     build_gallery("Database tab", NUM_ROWS, NUM_COLUMNS)
+    build_suggestion("Suggestion tab", NUM_ROWS_S, NUM_COLUMNS_S)
+    set_model(model)
+    set_transforms(my_transforms)

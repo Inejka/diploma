@@ -1,18 +1,18 @@
 import logging
+import os
 import sqlite3
 
 import gdown
-from PIL import Image
-from torch.utils.data import Dataset
-import os
-import torch.nn as nn
-from torchvision.models import resnet101, ResNet101_Weights
-from PIL import ImageFile
-import torch.optim as optim
-from torch.optim import lr_scheduler
-import torch
-from torchvision import transforms
 import pandas as pd
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from PIL import Image
+from PIL import ImageFile
+from torch.optim import lr_scheduler
+from torch.utils.data import Dataset
+from torchvision import transforms
+from torchvision.models import resnet101, ResNet101_Weights
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
